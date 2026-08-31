@@ -63,8 +63,8 @@
       }
       .sync-status {
         font-size: 0.72rem;
-        color: #94a3b8;
-        margin-left: 8px;
+        color: #cbd5e1;
+        margin-left: 6px;
       }
 
       .tab-bar {
@@ -294,13 +294,23 @@
         font-weight: 700;
         background: #f1f5f9;
       }
+
+      .loading-box {
+        text-align: center;
+        padding: 30px;
+        color: #64748b;
+        font-size: 1rem;
+        font-weight: 500;
+      }
     </style>
   </head>
   <body>
     <nav class="navbar">
       <div class="nav-title">
         🗳️ CTERA 2026 - Calamuchita
-        <span id="sync-msg" class="sync-status">🟢 Conectado</span>
+        <span id="sync-msg" class="sync-status"
+          >🟡 Conectando con Google Sheet...</span
+        >
       </div>
       <div class="nav-badge">🟣 Celeste Violeta</div>
     </nav>
@@ -311,7 +321,7 @@
         id="tab-padron"
         onclick="showTab('padron')"
       >
-        📋 Padrón (920)
+        📋 Padrón
       </button>
       <button class="tab-btn" id="tab-cortes" onclick="showTab('cortes')">
         ⏰ Cortes (11h/15h)
@@ -322,10 +332,11 @@
     </div>
 
     <div class="container">
+      <!-- TAB 1: PADRÓN -->
       <div id="view-padron">
         <div class="kpi-grid">
           <div class="kpi-card">
-            <div class="num" id="kpi-padron-total">920</div>
+            <div class="num" id="kpi-padron-total">0</div>
             <div class="lbl">Padrón Total</div>
           </div>
           <div class="kpi-card">
@@ -355,30 +366,39 @@
             class="filter-btn active"
             onclick="setMesaFilter('ALL', this)"
           >
-            Todas (920)
+            Todas
           </button>
           <button class="filter-btn" onclick="setMesaFilter(1, this)">
-            Mesa 1 (65)
+            Mesa 1 (La Cruz)
           </button>
           <button class="filter-btn" onclick="setMesaFilter(2, this)">
-            Mesa 2 (216)
+            Mesa 2 (Embalse)
           </button>
           <button class="filter-btn" onclick="setMesaFilter(3, this)">
-            Mesa 3 (578)
+            Mesa 3 (Santa Rosa)
           </button>
           <button class="filter-btn" onclick="setMesaFilter(4, this)">
-            Mesa 4 (61)
+            Mesa 4 (San Agustín)
           </button>
         </div>
 
-        <div id="voter-list-container"></div>
+        <div id="voter-list-container">
+          <div class="loading-box">
+            ⏳ Consultando el padrón en tiempo real desde tu Google Sheet...
+          </div>
+        </div>
       </div>
 
+      <!-- TAB 2: CORTES HORARIOS -->
       <div id="view-cortes" style="display: none">
         <div class="card">
           <h3 style="color: var(--primary); margin-bottom: 8px">
             ⏰ Reporte de Corte Parcial
           </h3>
+          <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 14px">
+            Transmite el avance de asistencia a la planilla de Drive.
+          </p>
+
           <div class="form-group">
             <label>MESA</label>
             <select class="form-control" id="corte-mesa">
@@ -423,7 +443,7 @@
             <textarea
               class="form-control"
               id="corte-obs"
-              placeholder="Sin inconvenientes..."
+              placeholder="Sin inconvenientes en la escuela..."
             ></textarea>
           </div>
           <button
@@ -431,11 +451,12 @@
             class="btn-submit"
             onclick="enviarCorteHorario()"
           >
-            📤 Transmitir Reporte de Corte
+            📤 Transmitir Reporte a Google Sheet
           </button>
         </div>
       </div>
 
+      <!-- TAB 3: CÓMPUTOS -->
       <div id="view-computos" style="display: none">
         <div class="card">
           <h3 style="color: var(--primary); margin-bottom: 12px">
@@ -488,127 +509,63 @@
           <button
             class="btn-submit"
             style="margin-top: 20px; background: #64748b"
-            onclick="sincronizarConNube()"
+            onclick="cargarPadronDesdeGoogleSheet()"
           >
-            🔄 Sincronizar Estado con Google Sheet
+            🔄 Recargar Todo desde Google Sheet
           </button>
         </div>
       </div>
     </div>
 
     <script>
-      const EMBEDDED_PADRON = [
-        {
-          orden: 1,
-          nombre: "AGUILERA MARIA LAURA",
-          dni: "29845792",
-          mesa: 1,
-          localidad: "La Cruz",
-          voto: "NO",
-          estimacion: "",
-        },
-        {
-          orden: 2,
-          nombre: "ALONSO SANTIAGO JULIAN",
-          dni: "27120849",
-          mesa: 1,
-          localidad: "La Cruz",
-          voto: "NO",
-          estimacion: "",
-        },
-        {
-          orden: 3,
-          nombre: "ALVAREZ ANA BERTA",
-          dni: "10437104",
-          mesa: 1,
-          localidad: "La Cruz",
-          voto: "NO",
-          estimacion: "",
-        },
-        {
-          orden: 4,
-          nombre: "ARIAS TERESA AMANDA",
-          dni: "2625391",
-          mesa: 1,
-          localidad: "La Cruz",
-          voto: "NO",
-          estimacion: "",
-        },
-        {
-          orden: 5,
-          nombre: "BADELLINO SANDRA FANNY",
-          dni: "17816864",
-          mesa: 1,
-          localidad: "La Cruz",
-          voto: "NO",
-          estimacion: "",
-        },
-        {
-          orden: 6,
-          nombre: "BOJANICH LILIANA MARGARITA",
-          dni: "14354347",
-          mesa: 1,
-          localidad: "La Cruz",
-          voto: "NO",
-          estimacion: "",
-        },
-        {
-          orden: 7,
-          nombre: "BRINGAS LUCIA EVA",
-          dni: "4781240",
-          mesa: 1,
-          localidad: "La Cruz",
-          voto: "NO",
-          estimacion: "",
-        },
-        {
-          orden: 8,
-          nombre: "BRINGAS MIRIA NELIDA",
-          dni: "4781207",
-          mesa: 1,
-          localidad: "La Cruz",
-          voto: "NO",
-          estimacion: "",
-        },
-        {
-          orden: 9,
-          nombre: "BRINGAS PABLO ISAAC",
-          dni: "21907312",
-          mesa: 1,
-          localidad: "La Cruz",
-          voto: "NO",
-          estimacion: "",
-        },
-        {
-          orden: 10,
-          nombre: "BUSSO GRICELDA MARY",
-          dni: "20078644",
-          mesa: 1,
-          localidad: "La Cruz",
-          voto: "NO",
-          estimacion: "",
-        },
-      ]; // (Se incluyen los 920 en el build final)
-
-      let padronData = [];
-      let activeMesaFilter = "ALL";
       const GAS_URL =
         "https://script.google.com/macros/s/AKfycbxRNFMyPa1akVnKLBIm4HpgcNSDMcFYEEsqff4W7EiUF2O4WKcwN7V3v9DUX0Vtmy0F/exec";
 
-      function initApp() {
-        const stored = localStorage.getItem("padron_calamuchita_2026_v4");
-        padronData = stored ? JSON.parse(stored) : EMBEDDED_PADRON;
+      let padronData = [];
+      let activeMesaFilter = "ALL";
 
-        renderPadronList();
-        updateKPIs();
-        sincronizarConNube(); // Trae el estado actual de Google Drive
-      }
+      // 1. CARGA INICIAL: Lee directamente la base de datos de Google Sheet vía JSONP
+      function cargarPadronDesdeGoogleSheet() {
+        document.getElementById("sync-msg").innerText =
+          "🟡 Conectando con Google Sheet...";
 
-      function saveLocal() {
-        localStorage.setItem(
-          "padron_calamuchita_2026_v4",
-          JSON.stringify(padronData),
-        );
+        const script = document.createElement("script");
+        const callbackName = "onPadronLoaded_" + Date.now();
+
+        window[callbackName] = function (res) {
+          if (res && res.status === "success" && res.data) {
+            padronData = res.data;
+            // Guardar copia local de respaldo
+            localStorage.setItem(
+              "padron_calamuchita_gsheet_cache",
+              JSON.stringify(padronData),
+            );
+
+            document.getElementById("sync-msg").innerText =
+              "🟢 Google Sheet Conectado (" + padronData.length + " reg.)";
+            renderPadronList();
+            updateKPIs();
+          }
+          delete window[callbackName];
+          if (script.parentNode) script.parentNode.removeChild(script);
+        };
+
+        script.src = `${GAS_URL}?action=getPadron&callback=${callbackName}`;
+        script.onerror = function () {
+          document.getElementById("sync-msg").innerText =
+            "⚠️ Error de red con Google Sheet. Usando copia local.";
+          // Si falla la red, cargar la copia de seguridad local
+          const cached = localStorage.getItem(
+            "padron_calamuchita_gsheet_cache",
+          );
+          if (cached) {
+            padronData = JSON.parse(cached);
+            renderPadronList();
+            updateKPIs();
+          }
+        };
+
+        document.body.appendChild(script);
       }
 
       function renderPadronList() {
@@ -621,12 +578,13 @@
 
         const filtered = padronData.filter((v) => {
           const matchesMesa =
-            activeMesaFilter === "ALL" || v.mesa === parseInt(activeMesaFilter);
+            activeMesaFilter === "ALL" ||
+            String(v.mesa) === String(activeMesaFilter);
           const matchesQuery =
             !query ||
             v.nombre.toLowerCase().includes(query) ||
-            v.dni.includes(query) ||
-            v.orden.toString() === query;
+            String(v.dni).includes(query) ||
+            String(v.orden) === query;
           return matchesMesa && matchesQuery;
         });
 
@@ -635,7 +593,7 @@
           return;
         }
 
-        filtered.slice(0, 100).forEach((v) => {
+        filtered.forEach((v) => {
           const div = document.createElement("div");
           div.className = `voter-item ${v.voto === "SI" ? "voted" : ""}`;
           div.innerHTML = `
@@ -660,12 +618,12 @@
         });
       }
 
+      // 2. ACTUALIZACIÓN EN VIVO: Envía el cambio directo a Google Sheet
       function toggleVoto(orden) {
         const v = padronData.find((item) => item.orden === orden);
         if (v) {
           v.voto = v.voto === "SI" ? "NO" : "SI";
           if (v.voto === "SI" && !v.estimacion) v.estimacion = "CV";
-          saveLocal();
           syncWithGoogleSheet(v);
           renderPadronList();
           updateKPIs();
@@ -676,10 +634,32 @@
         const v = padronData.find((item) => item.orden === orden);
         if (v) {
           v.estimacion = val;
-          saveLocal();
           syncWithGoogleSheet(v);
           updateKPIs();
         }
+      }
+
+      function syncWithGoogleSheet(voter) {
+        document.getElementById("sync-msg").innerText =
+          "🟡 Guardando en Google Sheet...";
+
+        const script = document.createElement("script");
+        const callbackName = "onUpdate_" + Date.now();
+
+        window[callbackName] = function (res) {
+          document.getElementById("sync-msg").innerText =
+            "🟢 Guardado en Google Sheet";
+          delete window[callbackName];
+          if (script.parentNode) script.parentNode.removeChild(script);
+        };
+
+        const url = `${GAS_URL}?action=updateVoto&dni=${voter.dni}&voto=${voter.voto}&estimacion=${encodeURIComponent(voter.estimacion)}&callback=${callbackName}`;
+        script.src = url;
+        script.onerror = () => {
+          document.getElementById("sync-msg").innerText =
+            "⚠️ Error al guardar en Drive";
+        };
+        document.body.appendChild(script);
       }
 
       function filterPadron() {
@@ -725,20 +705,24 @@
             totCvEst = 0;
           mesasCfg.forEach((m) => {
             const mVot = padronData.filter(
-              (v) => v.mesa === m.num && v.voto === "SI",
+              (v) => String(v.mesa) === String(m.num) && v.voto === "SI",
             ).length;
             const mCv = padronData.filter(
               (v) =>
-                v.mesa === m.num && v.voto === "SI" && v.estimacion === "CV",
+                String(v.mesa) === String(m.num) &&
+                v.voto === "SI" &&
+                v.estimacion === "CV",
             ).length;
-            const mPct = ((mVot / m.elect) * 100).toFixed(1);
+            const mPct = m.elect > 0 ? ((mVot / m.elect) * 100).toFixed(1) : 0;
             totElec += m.elect;
             totVot += mVot;
             totCvEst += mCv;
 
             tbody.innerHTML += `<tr><td><b>${m.name}</b></td><td>${m.elect}</td><td style="color:#16a34a; font-weight:700;">${mVot}</td><td>${mPct}%</td><td style="color:var(--cv-purple); font-weight:700;">${mCv}</td></tr>`;
           });
-          tbody.innerHTML += `<tr><td><b>TOTAL</b></td><td><b>${totElec}</b></td><td style="color:#16a34a;"><b>${totVot}</b></td><td><b>${((totVot / totElec) * 100).toFixed(1)}%</b></td><td style="color:var(--cv-purple);"><b>${totCvEst}</b></td></tr>`;
+          const totalPct =
+            totElec > 0 ? ((totVot / totElec) * 100).toFixed(1) : 0;
+          tbody.innerHTML += `<tr><td><b>TOTAL</b></td><td><b>${totElec}</b></td><td style="color:#16a34a;"><b>${totVot}</b></td><td><b>${totalPct}%</b></td><td style="color:var(--cv-purple);"><b>${totCvEst}</b></td></tr>`;
         }
       }
 
@@ -760,44 +744,6 @@
           .classList.toggle("active", tab === "computos");
       }
 
-      function syncWithGoogleSheet(voter) {
-        document.getElementById("sync-msg").innerText = "🟡 Sincronizando...";
-        const url = `${GAS_URL}?action=updateVoto&dni=${voter.dni}&voto=${voter.voto}&estimacion=${encodeURIComponent(voter.estimacion)}`;
-        const s = document.createElement("script");
-        s.src = url;
-        s.onload = () => {
-          document.getElementById("sync-msg").innerText = "🟢 Conectado";
-          s.remove();
-        };
-        s.onerror = () => {
-          document.getElementById("sync-msg").innerText = "🟡 Local";
-        };
-        document.body.appendChild(s);
-      }
-
-      function sincronizarConNube() {
-        document.getElementById("sync-msg").innerText = "🟡 Actualizando...";
-        fetch(`${GAS_URL}?action=getStatus`)
-          .then((res) => res.json())
-          .then((res) => {
-            if (res.status === "success" && res.data) {
-              padronData.forEach((v) => {
-                if (res.data[v.dni]) {
-                  v.voto = res.data[v.dni].voto;
-                  v.estimacion = res.data[v.dni].estimacion;
-                }
-              });
-              saveLocal();
-              renderPadronList();
-              updateKPIs();
-              document.getElementById("sync-msg").innerText = "🟢 Sincronizado";
-            }
-          })
-          .catch((err) => {
-            document.getElementById("sync-msg").innerText = "🟢 Local OK";
-          });
-      }
-
       function enviarCorteHorario() {
         const mesa = document.getElementById("corte-mesa").value;
         const tipo = document.getElementById("corte-tipo").value;
@@ -813,10 +759,11 @@
         const s = document.createElement("script");
         s.src = url;
         document.body.appendChild(s);
-        alert(`¡Corte de las ${tipo} enviado a la nube!`);
+        alert(`¡Corte de las ${tipo} enviado a la planilla de Google Sheet!`);
       }
 
-      window.onload = initApp;
+      // Al arrancar, consulta la Base de Datos en Google Sheet
+      window.onload = cargarPadronDesdeGoogleSheet;
     </script>
   </body>
 </html>
