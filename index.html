@@ -350,6 +350,16 @@
         border-radius: 8px;
         font-size: 1rem;
       }
+
+      .input-total-corte {
+        background-color: #f1f5f9;
+        color: var(--primary);
+        font-weight: 700;
+        font-size: 1.2rem;
+        text-align: center;
+        border: 2px solid #cbd5e1;
+      }
+
       .btn-submit {
         width: 100%;
         padding: 14px;
@@ -554,14 +564,15 @@
         </div>
       </div>
 
-      <!-- TAB 2: CORTES HORARIOS -->
+      <!-- TAB 2: CORTES HORARIOS (CON BLANCOS, NULOS Y SUMATORIA AUTOMÁTICA) -->
       <div id="view-cortes" style="display: none">
         <div class="card">
           <h3 style="color: var(--primary); margin-bottom: 8px">
             ⏰ Reporte de Corte Parcial
           </h3>
           <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 14px">
-            Envío de avance en horarios clave de fiscalización.
+            Ingresá los datos observados en la mesa. La sumatoria total se
+            calcula automáticamente.
           </p>
 
           <div class="form-group">
@@ -575,6 +586,7 @@
               <option value="4">Mesa 4 - San Agustín</option>
             </select>
           </div>
+
           <div class="form-group">
             <label>HORARIO DE CORTE</label>
             <select class="form-control" id="corte-tipo">
@@ -583,54 +595,106 @@
               <option value="18:00 hs">Cierre de Votación - 18:00 hs</option>
             </select>
           </div>
+
+          <!-- Inputs de Votos / Listas -->
           <div class="form-group">
-            <label>CANTIDAD DE VOTANTES QUE EMITIERON SU VOTO</label>
-            <input
-              type="number"
-              class="form-control"
-              id="corte-total-votaron"
-              placeholder="Ej: 85"
-              min="0"
-            />
-          </div>
-          <div class="form-group">
-            <label>ESTIMACIÓN CELESTE VIOLETA (Votos propios)</label>
+            <label style="color: var(--cv-purple)"
+              >🟣 ESTIMACIÓN CELESTE VIOLETA</label
+            >
             <input
               type="number"
               class="form-control"
               id="corte-cv-estimado"
-              placeholder="Ej: 60"
+              placeholder="0"
               min="0"
+              value="0"
+              oninput="calcCorteTotal()"
             />
           </div>
+
           <div class="form-group">
-            <label>ESTIMACIÓN MULTICOLOR</label>
+            <label style="color: var(--mc-red)">🔴 ESTIMACIÓN MULTICOLOR</label>
             <input
               type="number"
               class="form-control"
               id="corte-mc-estimado"
-              placeholder="Ej: 15"
+              placeholder="0"
               min="0"
+              value="0"
+              oninput="calcCorteTotal()"
             />
           </div>
+
           <div class="form-group">
-            <label>ESTIMACIÓN AZUL Y BLANCA</label>
+            <label style="color: var(--ab-blue)"
+              >🔵 ESTIMACIÓN AZUL Y BLANCA</label
+            >
             <input
               type="number"
               class="form-control"
               id="corte-ab-estimado"
-              placeholder="Ej: 10"
+              placeholder="0"
               min="0"
+              value="0"
+              oninput="calcCorteTotal()"
             />
           </div>
+
           <div class="form-group">
-            <label>OBSERVACIONES</label>
+            <label style="color: #475569">⚪ VOTOS EN BLANCO</label>
+            <input
+              type="number"
+              class="form-control"
+              id="corte-blanco"
+              placeholder="0"
+              min="0"
+              value="0"
+              oninput="calcCorteTotal()"
+            />
+          </div>
+
+          <div class="form-group">
+            <label style="color: #64748b"
+              >🔘 VOTOS NULOS / RECURRIDOS / IMPUGNADOS</label
+            >
+            <input
+              type="number"
+              class="form-control"
+              id="corte-nulo"
+              placeholder="0"
+              min="0"
+              value="0"
+              oninput="calcCorteTotal()"
+            />
+          </div>
+
+          <!-- Sumatoria Automática -->
+          <div class="form-group">
+            <label style="font-size: 0.95rem; color: var(--primary)"
+              >📊 TOTAL DE VOTANTES (SUMATORIA AUTOMÁTICA)</label
+            >
+            <input
+              type="number"
+              class="form-control input-total-corte"
+              id="corte-total-votaron"
+              value="0"
+              readonly
+            />
+            <p style="font-size: 0.78rem; color: #64748b; margin-top: 4px">
+              Suma automática de Celeste Violeta + Multicolor + Azul y Blanca +
+              Blanco + Nulos.
+            </p>
+          </div>
+
+          <div class="form-group">
+            <label>OBSERVACIONES / CLIMA EN LA ESCUELA</label>
             <textarea
               class="form-control"
               id="corte-obs"
               placeholder="Sin inconvenientes en la escuela..."
             ></textarea>
           </div>
+
           <button
             type="button"
             class="btn-submit"
@@ -802,7 +866,6 @@
       let padronData = [];
       let activeMesaFilter = "ALL";
 
-      // Instancias de Chart.js
       let chartParticipacionInstance = null;
       let chartListasInstance = null;
 
@@ -873,7 +936,6 @@
         const tabComputos = document.getElementById("tab-computos");
         const mesaFilters = document.getElementById("mesa-filters-row");
 
-        // FISCAL DE MESA: Sólo su mesa, Padron y Cortes, NO Cómputos
         if (rol === "FISCAL DE MESA") {
           tabComputos.style.display = "none";
           tabCortes.style.display = "block";
@@ -881,21 +943,15 @@
           activeMesaFilter = currentUser.mesa;
           document.getElementById("corte-mesa").value = currentUser.mesa;
           document.getElementById("corte-mesa").disabled = true;
-        }
-        // FISCAL GENERAL: Todas las mesas, Padrón y CÓMPUTOS (Solo lectura)
-        else if (rol === "FISCAL GENERAL") {
+        } else if (rol === "FISCAL GENERAL") {
           tabComputos.style.display = "block";
           tabCortes.style.display = "none";
           mesaFilters.style.display = "flex";
-        }
-        // COMPUTO: Padron, Cortes y Cómputos, NO edita votos individuales
-        else if (rol === "COMPUTO") {
+        } else if (rol === "COMPUTO") {
           tabComputos.style.display = "block";
           tabCortes.style.display = "block";
           mesaFilters.style.display = "flex";
-        }
-        // ADMIN: Acceso total
-        else {
+        } else {
           tabComputos.style.display = "block";
           tabCortes.style.display = "block";
           mesaFilters.style.display = "flex";
@@ -1070,7 +1126,7 @@
         renderPadronList();
       }
 
-      // 4. KPIS, GRÁFICOS Y TABLA: SOLO SE CONTABILIZA A QUIENES VOTARON
+      // 4. KPIS, GRÁFICOS Y TABLA
       function updateKPIs() {
         const scopeData =
           activeMesaFilter === "ALL"
@@ -1080,7 +1136,6 @@
               );
         const total = scopeData.length;
 
-        // FILTRO ESTRICTO: Solo aquellos donde v.voto === 'SI'
         const votaron = scopeData.filter((v) => v.voto === "SI").length;
         const noVotaron = total - votaron;
 
@@ -1099,7 +1154,6 @@
         document.getElementById("kpi-padron-votaron").innerText = votaron;
         document.getElementById("kpi-padron-cv").innerText = cv;
 
-        // Cálculos porcentuales sobre los que votaron
         const pctCV = votaron > 0 ? ((cv / votaron) * 100).toFixed(1) : 0;
         const pctMC = votaron > 0 ? ((mc / votaron) * 100).toFixed(1) : 0;
         const pctAB = votaron > 0 ? ((ab / votaron) * 100).toFixed(1) : 0;
@@ -1117,7 +1171,6 @@
 
         renderCharts(votaron, noVotaron, cv, mc, ab, bl);
 
-        // Tabla detallada de mesas (con NO VOTOS y BLANCOS/OTROS)
         const tbody = document.getElementById("resumen-mesas-body");
         if (tbody) {
           tbody.innerHTML = "";
@@ -1141,7 +1194,6 @@
               (v) => String(v.mesa) === String(m.num) && v.voto === "SI",
             ).length;
             const mNoVot = m.elect - mVot;
-            // Solo se cuentan si votaron
             const mCv = padronData.filter(
               (v) =>
                 String(v.mesa) === String(m.num) &&
@@ -1204,13 +1256,26 @@
         }
       }
 
-      // Renderizado dinámico de Gráficos de Torta
+      // 5. CÁLCULO DE SUMATORIA AUTOMÁTICA EN LA PESTAÑA CORTES
+      function calcCorteTotal() {
+        const cv =
+          parseInt(document.getElementById("corte-cv-estimado").value) || 0;
+        const mc =
+          parseInt(document.getElementById("corte-mc-estimado").value) || 0;
+        const ab =
+          parseInt(document.getElementById("corte-ab-estimado").value) || 0;
+        const bl = parseInt(document.getElementById("corte-blanco").value) || 0;
+        const nu = parseInt(document.getElementById("corte-nulo").value) || 0;
+
+        const total = cv + mc + ab + bl + nu;
+        document.getElementById("corte-total-votaron").value = total;
+      }
+
       function renderCharts(votaron, noVotaron, cv, mc, ab, bl) {
         const ctxPart = document.getElementById("chartParticipacion");
         const ctxList = document.getElementById("chartListas");
         if (!ctxPart || !ctxList) return;
 
-        // 1. Gráfico de Participación
         if (chartParticipacionInstance) {
           chartParticipacionInstance.data.datasets[0].data = [
             votaron,
@@ -1243,7 +1308,6 @@
           });
         }
 
-        // 2. Gráfico de Listas
         const listData = votaron > 0 ? [cv, mc, ab, bl] : [1, 0, 0, 0];
         if (chartListasInstance) {
           chartListasInstance.data.datasets[0].data = [cv, mc, ab, bl];
@@ -1305,21 +1369,33 @@
       function enviarCorteHorario() {
         const mesa = document.getElementById("corte-mesa").value;
         const tipo = document.getElementById("corte-tipo").value;
-        const tot = document.getElementById("corte-total-votaron").value;
-        const cv = document.getElementById("corte-cv-estimado").value || 0;
-        const mc = document.getElementById("corte-mc-estimado").value || 0;
-        const ab = document.getElementById("corte-ab-estimado").value || 0;
+        const cv =
+          parseInt(document.getElementById("corte-cv-estimado").value) || 0;
+        const mc =
+          parseInt(document.getElementById("corte-mc-estimado").value) || 0;
+        const ab =
+          parseInt(document.getElementById("corte-ab-estimado").value) || 0;
+        const bl = parseInt(document.getElementById("corte-blanco").value) || 0;
+        const nu = parseInt(document.getElementById("corte-nulo").value) || 0;
+        const tot = cv + mc + ab + bl + nu;
         const obs = document.getElementById("corte-obs").value;
 
-        if (!tot) {
-          alert("Ingresá la cantidad de votantes.");
-          return;
+        if (tot === 0) {
+          if (
+            !confirm(
+              "El total de votos sumados es 0. ¿Querés enviar el reporte de corte de todas formas?",
+            )
+          )
+            return;
         }
-        const url = `${GAS_URL}?action=sendCorte&mesa=${mesa}&tipoCorte=${encodeURIComponent(tipo)}&totalVotaron=${tot}&cv=${cv}&mc=${mc}&ab=${ab}&obs=${encodeURIComponent(obs)}`;
+
+        const url = `${GAS_URL}?action=sendCorte&mesa=${mesa}&tipoCorte=${encodeURIComponent(tipo)}&totalVotaron=${tot}&cv=${cv}&mc=${mc}&ab=${ab}&blanco=${bl}&nulo=${nu}&obs=${encodeURIComponent(obs)}`;
         const s = document.createElement("script");
         s.src = url;
         document.body.appendChild(s);
-        alert(`¡Corte de las ${tipo} enviado a la planilla de Google Sheet!`);
+        alert(
+          `¡Corte de las ${tipo} enviado con éxito! Total de votos transmitidos: ${tot}`,
+        );
       }
 
       window.onload = initApp;
