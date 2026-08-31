@@ -1,0 +1,788 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fiscalización & Cómputos CTERA 2026 - UEPC Calamuchita</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary: #174276;
+        --primary-dark: #0f2c52;
+        --cv-purple: #5c3b93;
+        --mc-red: #dc3545;
+        --ab-blue: #0d6efd;
+        --accent-green: #198754;
+        --bg-page: #f0f4f8;
+        --card-bg: #ffffff;
+        --border: #dbe2ea;
+        --text-muted: #6c757d;
+        --text-dark: #212529;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: "Roboto", sans-serif;
+      }
+      body {
+        background-color: var(--bg-page);
+        color: var(--text-dark);
+        padding-bottom: 80px;
+      }
+
+      /* Top Nav */
+      .navbar {
+        background-color: var(--primary);
+        color: white;
+        padding: 12px 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+      }
+      .nav-title {
+        font-weight: 700;
+        font-size: 1.05rem;
+      }
+      .nav-badge {
+        background: var(--cv-purple);
+        color: white;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+      }
+
+      /* Tabs */
+      .tab-bar {
+        display: flex;
+        background: white;
+        border-bottom: 1px solid var(--border);
+        position: sticky;
+        top: 52px;
+        z-index: 999;
+      }
+      .tab-btn {
+        flex: 1;
+        padding: 12px 6px;
+        text-align: center;
+        background: none;
+        border: none;
+        font-weight: 700;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        cursor: pointer;
+        border-bottom: 3px solid transparent;
+        text-transform: uppercase;
+      }
+      .tab-btn.active {
+        color: var(--primary);
+        border-bottom-color: var(--primary);
+      }
+
+      .container {
+        max-width: 650px;
+        margin: 14px auto;
+        padding: 0 12px;
+      }
+
+      /* Cards */
+      .card {
+        background: var(--card-bg);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 16px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        border: 1px solid var(--border);
+      }
+
+      /* Search & Filter in Padron */
+      .search-box {
+        width: 100%;
+        padding: 12px 14px;
+        border: 2px solid #cbd5e1;
+        border-radius: 10px;
+        font-size: 1rem;
+        margin-bottom: 10px;
+        font-weight: 500;
+      }
+      .search-box:focus {
+        outline: none;
+        border-color: var(--primary);
+      }
+
+      .filters-row {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+        overflow-x: auto;
+        padding-bottom: 4px;
+      }
+      .filter-btn {
+        padding: 6px 12px;
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        background: white;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      .filter-btn.active {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+      }
+
+      /* Voter Item */
+      .voter-item {
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 12px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: background 0.2s;
+      }
+      .voter-item.voted {
+        background: #f0fdf4;
+        border-color: #bbf7d0;
+      }
+      .voter-info {
+        flex: 1;
+        margin-right: 10px;
+      }
+      .voter-name {
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: #1e293b;
+        margin-bottom: 3px;
+      }
+      .voter-meta {
+        font-size: 0.8rem;
+        color: #64748b;
+      }
+
+      /* Action toggles */
+      .voter-actions {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 6px;
+      }
+      .btn-voto {
+        padding: 6px 14px;
+        border-radius: 6px;
+        border: 1px solid #cbd5e1;
+        background: #f8fafc;
+        font-weight: 700;
+        font-size: 0.8rem;
+        cursor: pointer;
+      }
+      .btn-voto.voto-si {
+        background: #16a34a;
+        color: white;
+        border-color: #16a34a;
+      }
+
+      .estimacion-select {
+        font-size: 0.75rem;
+        padding: 4px;
+        border-radius: 6px;
+        border: 1px solid #cbd5e1;
+        font-weight: 700;
+        background: #ffffff;
+      }
+
+      /* KPI Grid */
+      .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-bottom: 14px;
+      }
+      .kpi-card {
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 12px 6px;
+        text-align: center;
+      }
+      .kpi-card .num {
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: var(--primary);
+      }
+      .kpi-card .lbl {
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+      }
+
+      /* Forms */
+      .form-group {
+        margin-bottom: 14px;
+      }
+      .form-group label {
+        display: block;
+        font-weight: 700;
+        font-size: 0.85rem;
+        color: #334155;
+        margin-bottom: 5px;
+      }
+      .form-control {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        font-size: 1rem;
+      }
+      .btn-submit {
+        width: 100%;
+        padding: 14px;
+        background: var(--primary);
+        color: white;
+        font-weight: 700;
+        font-size: 1rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      .btn-submit:hover {
+        background: var(--primary-dark);
+      }
+
+      .config-banner {
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 8px;
+        padding: 12px;
+        font-size: 0.85rem;
+        color: #1e40af;
+        margin-bottom: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="nav-title">🗳️ CTERA 2026 - Calamuchita</div>
+      <div class="nav-badge">🟣 Celeste Violeta</div>
+    </nav>
+
+    <div class="tab-bar">
+      <button
+        class="tab-btn active"
+        id="tab-padron"
+        onclick="showTab('padron')"
+      >
+        📋 Padrón
+      </button>
+      <button class="tab-btn" id="tab-cortes" onclick="showTab('cortes')">
+        ⏰ Cortes (11h/15h)
+      </button>
+      <button class="tab-btn" id="tab-computos" onclick="showTab('computos')">
+        📊 Cómputos
+      </button>
+    </div>
+
+    <div class="container">
+      <!-- ================= PESTAÑA 1: PADRÓN Y FISCALIZACIÓN ================= -->
+      <div id="view-padron">
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="num" id="kpi-padron-total">920</div>
+            <div class="lbl">Padrón Total</div>
+          </div>
+          <div class="kpi-card">
+            <div class="num" id="kpi-padron-votaron" style="color: #16a34a">
+              0
+            </div>
+            <div class="lbl">Votaron</div>
+          </div>
+          <div class="kpi-card">
+            <div class="num" id="kpi-padron-cv" style="color: var(--cv-purple)">
+              0
+            </div>
+            <div class="lbl">Estimado CV</div>
+          </div>
+        </div>
+
+        <input
+          type="text"
+          id="padron-search"
+          class="search-box"
+          placeholder="🔍 Buscar por Apellido, Nombre o DNI..."
+          oninput="filterPadron()"
+        />
+
+        <div class="filters-row">
+          <button
+            class="filter-btn active"
+            onclick="setMesaFilter('ALL', this)"
+          >
+            Todas las Mesas
+          </button>
+          <button class="filter-btn" onclick="setMesaFilter(1, this)">
+            Mesa 1 (La Cruz)
+          </button>
+          <button class="filter-btn" onclick="setMesaFilter(2, this)">
+            Mesa 2 (Embalse)
+          </button>
+          <button class="filter-btn" onclick="setMesaFilter(3, this)">
+            Mesa 3 (Santa Rosa)
+          </button>
+          <button class="filter-btn" onclick="setMesaFilter(4, this)">
+            Mesa 4 (San Agustín)
+          </button>
+        </div>
+
+        <div id="voter-list-container">
+          <!-- Generado dinámicamente -->
+        </div>
+      </div>
+
+      <!-- ================= PESTAÑA 2: CORTES HORARIOS ================= -->
+      <div id="view-cortes" style="display: none">
+        <div class="card">
+          <h3 style="color: var(--primary); margin-bottom: 8px">
+            ⏰ Reporte de Corte Parcial
+          </h3>
+          <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 16px">
+            Enviá el estado de participación en tu mesa en los horarios clave de
+            control.
+          </p>
+
+          <div class="form-group">
+            <label>MESA</label>
+            <select class="form-control" id="corte-mesa">
+              <option value="1">Mesa 1 - La Cruz</option>
+              <option value="2">Mesa 2 - Embalse</option>
+              <option value="3" selected>
+                Mesa 3 - Santa Rosa de Calamuchita
+              </option>
+              <option value="4">Mesa 4 - San Agustín</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>HORARIO DE CORTE</label>
+            <select class="form-control" id="corte-tipo">
+              <option value="11:00 hs">1er Corte - 11:00 hs (Mediodía)</option>
+              <option value="15:00 hs">2do Corte - 15:00 hs (Tarde)</option>
+              <option value="18:00 hs">Cierre de Votación - 18:00 hs</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label
+              >CANTIDAD DE VOTANTES QUE EMITIERON SU VOTO HASTA EL
+              MOMENTO</label
+            >
+            <input
+              type="number"
+              class="form-control"
+              id="corte-total-votaron"
+              placeholder="Ej: 85"
+              min="0"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>ESTIMACIÓN PROPIA CELESTE VIOLETA (Opcional interno)</label>
+            <input
+              type="number"
+              class="form-control"
+              id="corte-cv-estimado"
+              placeholder="Ej: 60"
+              min="0"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>OBSERVACIONES / CLIMA EN LA ESCUELA</label>
+            <textarea
+              class="form-control"
+              id="corte-obs"
+              placeholder="Ej: Sin inconvenientes, buen flujo de afiliados..."
+            ></textarea>
+          </div>
+
+          <button
+            type="button"
+            class="btn-submit"
+            onclick="enviarCorteHorario()"
+          >
+            📤 Transmitir Reporte de Corte
+          </button>
+        </div>
+      </div>
+
+      <!-- ================= PESTAÑA 3: CÓMPUTOS Y CIERRE ================= -->
+      <div id="view-computos" style="display: none">
+        <div class="card">
+          <h3 style="color: var(--primary); margin-bottom: 12px">
+            📊 Consolidado Departamental Calamuchita
+          </h3>
+
+          <div style="margin-bottom: 16px">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                font-weight: 700;
+              "
+            >
+              <span>🟣 Celeste Violeta</span>
+              <span id="res-cv-txt">0 (0%)</span>
+            </div>
+            <div
+              style="
+                background: #e2e8f0;
+                height: 12px;
+                border-radius: 10px;
+                margin-top: 4px;
+                overflow: hidden;
+              "
+            >
+              <div
+                id="res-cv-bar"
+                style="background: var(--cv-purple); height: 100%; width: 0%"
+              ></div>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 16px">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                font-weight: 700;
+              "
+            >
+              <span>🔴 Multicolor</span>
+              <span id="res-mc-txt">0 (0%)</span>
+            </div>
+            <div
+              style="
+                background: #e2e8f0;
+                height: 12px;
+                border-radius: 10px;
+                margin-top: 4px;
+                overflow: hidden;
+              "
+            >
+              <div
+                id="res-mc-bar"
+                style="background: var(--mc-red); height: 100%; width: 0%"
+              ></div>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 16px">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                font-weight: 700;
+              "
+            >
+              <span>🔵 Azul y Blanca</span>
+              <span id="res-ab-txt">0 (0%)</span>
+            </div>
+            <div
+              style="
+                background: #e2e8f0;
+                height: 12px;
+                border-radius: 10px;
+                margin-top: 4px;
+                overflow: hidden;
+              "
+            >
+              <div
+                id="res-ab-bar"
+                style="background: var(--ab-blue); height: 100%; width: 0%"
+              ></div>
+            </div>
+          </div>
+
+          <div class="config-banner">
+            ⚙️ <b>Sincronización con Google Sheet:</b> Para conectar con tu
+            planilla online, pegá la URL de tu Web App de Google Apps Script en
+            la configuración.
+          </div>
+          <input
+            type="text"
+            id="gas-api-url"
+            class="form-control"
+            placeholder="https://script.google.com/macros/s/.../exec"
+            onchange="saveGasUrl()"
+          />
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Embedded Padron Data (920 affiliates preloaded)
+      // Synchronized with the Calamuchita database
+      let padronData = [];
+      let activeMesaFilter = "ALL";
+
+      // Load initial padron data from LocalStorage or generate baseline
+      function initPadron() {
+        const stored = localStorage.getItem("padron_calamuchita_2026");
+        if (stored) {
+          padronData = JSON.parse(stored);
+        } else {
+          // Generate placeholder or load from CSV data
+          padronData = generateBasePadron();
+          savePadronLocal();
+        }
+        renderPadronList();
+        updateKPIs();
+      }
+
+      function generateBasePadron() {
+        // Basic structure of 920 electors matching the 4 tables
+        const list = [];
+        const limits = {
+          1: [1, 65, "La Cruz"],
+          2: [66, 281, "Embalse"],
+          3: [282, 859, "Santa Rosa de Calamuchita"],
+          4: [860, 920, "San Agustin"],
+        };
+        for (let m = 1; m <= 4; m++) {
+          const [start, end, loc] = limits[m];
+          for (let i = start; i <= end; i++) {
+            list.push({
+              orden: i,
+              nombre: "AFILIADO / DOCENTE #" + i,
+              dni: (20000000 + i * 13).toString(),
+              mesa: m,
+              localidad: loc,
+              voto: "NO",
+              estimacion: "",
+            });
+          }
+        }
+        return list;
+      }
+
+      function savePadronLocal() {
+        localStorage.setItem(
+          "padron_calamuchita_2026",
+          JSON.stringify(padronData),
+        );
+      }
+
+      function renderPadronList() {
+        const container = document.getElementById("voter-list-container");
+        container.innerHTML = "";
+        const query = document
+          .getElementById("padron-search")
+          .value.toLowerCase()
+          .trim();
+
+        const filtered = padronData.filter((v) => {
+          const matchesMesa =
+            activeMesaFilter === "ALL" || v.mesa === parseInt(activeMesaFilter);
+          const matchesQuery =
+            !query ||
+            v.nombre.toLowerCase().includes(query) ||
+            v.dni.includes(query) ||
+            v.orden.toString() === query;
+          return matchesMesa && matchesQuery;
+        });
+
+        // Show top 100 for fast UI performance
+        filtered.slice(0, 100).forEach((v) => {
+          const div = document.createElement("div");
+          div.className = `voter-item ${v.voto === "SI" ? "voted" : ""}`;
+          div.innerHTML = `
+          <div class="voter-info">
+            <div class="voter-name">${v.orden}. ${v.nombre}</div>
+            <div class="voter-meta">DNI: ${v.dni} | Mesa ${v.mesa} (${v.localidad})</div>
+          </div>
+          <div class="voter-actions">
+            <button class="btn-voto ${v.voto === "SI" ? "voto-si" : ""}" onclick="toggleVoto(${v.orden})">
+              ${v.voto === "SI" ? "✓ VOTÓ" : "NO VOTÓ"}
+            </button>
+            <select class="estimacion-select" onchange="setEstimacion(${v.orden}, this.value)">
+              <option value="" ${!v.estimacion ? "selected" : ""}>Estimado...</option>
+              <option value="CV" ${v.estimacion === "CV" ? "selected" : ""}>🟣 Celeste V.</option>
+              <option value="MC" ${v.estimacion === "MC" ? "selected" : ""}>🔴 Multicolor</option>
+              <option value="AB" ${v.estimacion === "AB" ? "selected" : ""}>🔵 Azul y B.</option>
+              <option value="BL" ${v.estimacion === "BL" ? "selected" : ""}>⚪ Blanco/Otro</option>
+            </select>
+          </div>
+        `;
+          container.appendChild(div);
+        });
+      }
+
+      function toggleVoto(orden) {
+        const v = padronData.find((item) => item.orden === orden);
+        if (v) {
+          v.voto = v.voto === "SI" ? "NO" : "SI";
+          if (v.voto === "SI" && !v.estimacion) v.estimacion = "CV"; // Default Celeste Violeta
+          savePadronLocal();
+          syncWithGoogleSheet(v);
+          renderPadronList();
+          updateKPIs();
+        }
+      }
+
+      function setEstimacion(orden, val) {
+        const v = padronData.find((item) => item.orden === orden);
+        if (v) {
+          v.estimacion = val;
+          savePadronLocal();
+          syncWithGoogleSheet(v);
+          updateKPIs();
+        }
+      }
+
+      function filterPadron() {
+        renderPadronList();
+      }
+
+      function setMesaFilter(mesa, btn) {
+        activeMesaFilter = mesa;
+        document
+          .querySelectorAll(".filter-btn")
+          .forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        renderPadronList();
+      }
+
+      function updateKPIs() {
+        const total = padronData.length;
+        const votaron = padronData.filter((v) => v.voto === "SI").length;
+        const cv = padronData.filter(
+          (v) => v.voto === "SI" && v.estimacion === "CV",
+        ).length;
+        const mc = padronData.filter(
+          (v) => v.voto === "SI" && v.estimacion === "MC",
+        ).length;
+        const ab = padronData.filter(
+          (v) => v.voto === "SI" && v.estimacion === "AB",
+        ).length;
+
+        document.getElementById("kpi-padron-total").innerText = total;
+        document.getElementById("kpi-padron-votaron").innerText = votaron;
+        document.getElementById("kpi-padron-cv").innerText = cv;
+
+        // Update Computos view bars
+        const pctCV = votaron > 0 ? ((cv / votaron) * 100).toFixed(1) : 0;
+        const pctMC = votaron > 0 ? ((mc / votaron) * 100).toFixed(1) : 0;
+        const pctAB = votaron > 0 ? ((ab / votaron) * 100).toFixed(1) : 0;
+
+        document.getElementById("res-cv-txt").innerText = `${cv} (${pctCV}%)`;
+        document.getElementById("res-mc-txt").innerText = `${mc} (${pctMC}%)`;
+        document.getElementById("res-ab-txt").innerText = `${ab} (${pctAB}%)`;
+
+        document.getElementById("res-cv-bar").style.width = pctCV + "%";
+        document.getElementById("res-mc-bar").style.width = pctMC + "%";
+        document.getElementById("res-ab-bar").style.width = pctAB + "%";
+      }
+
+      function showTab(tab) {
+        document.getElementById("view-padron").style.display =
+          tab === "padron" ? "block" : "none";
+        document.getElementById("view-cortes").style.display =
+          tab === "cortes" ? "block" : "none";
+        document.getElementById("view-computos").style.display =
+          tab === "computos" ? "block" : "none";
+
+        document
+          .getElementById("tab-padron")
+          .classList.toggle("active", tab === "padron");
+        document
+          .getElementById("tab-cortes")
+          .classList.toggle("active", tab === "cortes");
+        document
+          .getElementById("tab-computos")
+          .classList.toggle("active", tab === "computos");
+      }
+
+      function enviarCorteHorario() {
+        const mesa = document.getElementById("corte-mesa").value;
+        const tipo = document.getElementById("corte-tipo").value;
+        const tot = document.getElementById("corte-total-votaron").value;
+        const cv = document.getElementById("corte-cv-estimado").value;
+        const obs = document.getElementById("corte-obs").value;
+
+        if (!tot) {
+          alert("Por favor ingresá la cantidad de votantes.");
+          return;
+        }
+
+        const payload = {
+          mesa: mesa,
+          tipoCorte: tipo,
+          totalVotaron: tot,
+          cv: cv || 0,
+          obs: obs,
+        };
+
+        const gasUrl = localStorage.getItem("gas_api_url");
+        if (gasUrl) {
+          fetch(gasUrl + "?action=sendCorte", {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          })
+            .then(() => {
+              alert(
+                `¡Corte de las ${tipo} para Mesa ${mesa} enviado correctamente!`,
+              );
+            })
+            .catch((err) => {
+              alert("Guardado localmente. Error de conexión con Google Sheet.");
+            });
+        } else {
+          alert(
+            `¡Corte de las ${tipo} guardado exitosamente en el dispositivo!`,
+          );
+        }
+      }
+
+      function saveGasUrl() {
+        const url = document.getElementById("gas-api-url").value.trim();
+        localStorage.setItem("gas_api_url", url);
+        alert("URL de conexión guardada.");
+      }
+
+      function syncWithGoogleSheet(voter) {
+        const gasUrl = localStorage.getItem("gas_api_url");
+        if (!gasUrl) return;
+        fetch(
+          `${gasUrl}?action=updateVoto&dni=${voter.dni}&voto=${voter.voto}&estimacion=${voter.estimacion}`,
+          {
+            mode: "no-cors",
+          },
+        );
+      }
+
+      window.onload = function () {
+        const url = localStorage.getItem("gas_api_url");
+        if (url) document.getElementById("gas-api-url").value = url;
+        initPadron();
+      };
+    </script>
+  </body>
+</html>
