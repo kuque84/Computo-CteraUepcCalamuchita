@@ -10,6 +10,8 @@
       href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
       rel="stylesheet"
     />
+    <!-- Chart.js CDN for interactive Charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
       :root {
         --primary: #174276;
@@ -17,7 +19,9 @@
         --cv-purple: #5c3b93;
         --mc-red: #dc3545;
         --ab-blue: #0d6efd;
-        --accent-green: #198754;
+        --bl-gray: #64748b;
+        --nv-gray: #94a3b8;
+        --accent-green: #16a34a;
         --bg-page: #f0f4f8;
         --card-bg: #ffffff;
         --border: #dbe2ea;
@@ -25,13 +29,25 @@
         --text-dark: #212529;
       }
 
-      * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Roboto', sans-serif; }
-      body { background-color: var(--bg-page); color: var(--text-dark); padding-bottom: 80px; }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: "Roboto", sans-serif;
+      }
+      body {
+        background-color: var(--bg-page);
+        color: var(--text-dark);
+        padding-bottom: 80px;
+      }
 
       /* Login Overlay */
       #login-overlay {
         position: fixed;
-        top: 0; left: 0; width: 100vw; height: 100vh;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
         background: linear-gradient(135deg, #0f2c52 0%, #174276 100%);
         display: flex;
         align-items: center;
@@ -45,7 +61,7 @@
         padding: 24px;
         width: 100%;
         max-width: 400px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
         text-align: center;
       }
       .login-badge {
@@ -58,8 +74,17 @@
         font-weight: 700;
         margin-bottom: 12px;
       }
-      .login-title { font-size: 1.3rem; font-weight: 700; color: var(--primary); margin-bottom: 4px; }
-      .login-subtitle { font-size: 0.85rem; color: #64748b; margin-bottom: 20px; }
+      .login-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 4px;
+      }
+      .login-subtitle {
+        font-size: 0.85rem;
+        color: #64748b;
+        margin-bottom: 20px;
+      }
       .login-input {
         width: 100%;
         padding: 14px;
@@ -71,7 +96,10 @@
         letter-spacing: 1px;
         margin-bottom: 14px;
       }
-      .login-input:focus { outline: none; border-color: var(--primary); }
+      .login-input:focus {
+        outline: none;
+        border-color: var(--primary);
+      }
       .btn-login {
         width: 100%;
         padding: 14px;
@@ -83,9 +111,15 @@
         border-radius: 10px;
         cursor: pointer;
       }
-      .login-msg { margin-top: 12px; font-size: 0.85rem; color: #dc3545; font-weight: 600; min-height: 20px; }
+      .login-msg {
+        margin-top: 12px;
+        font-size: 0.85rem;
+        color: #dc3545;
+        font-weight: 600;
+        min-height: 20px;
+      }
 
-      /* App Shell */
+      /* App Navbar */
       .navbar {
         background-color: var(--primary);
         color: white;
@@ -96,11 +130,14 @@
         position: sticky;
         top: 0;
         z-index: 1000;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
       }
-      .nav-title { font-weight: 700; font-size: 0.95rem; }
+      .nav-title {
+        font-weight: 700;
+        font-size: 0.95rem;
+      }
       .user-pill {
-        background: rgba(255,255,255,0.15);
+        background: rgba(255, 255, 255, 0.15);
         border-radius: 20px;
         padding: 4px 10px;
         font-size: 0.78rem;
@@ -141,16 +178,23 @@
         border-bottom: 3px solid transparent;
         text-transform: uppercase;
       }
-      .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+      .tab-btn.active {
+        color: var(--primary);
+        border-bottom-color: var(--primary);
+      }
 
-      .container { max-width: 650px; margin: 14px auto; padding: 0 12px; }
+      .container {
+        max-width: 680px;
+        margin: 14px auto;
+        padding: 0 12px;
+      }
 
       .card {
         background: var(--card-bg);
         border-radius: 12px;
         padding: 16px;
         margin-bottom: 16px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         border: 1px solid var(--border);
       }
 
@@ -163,9 +207,18 @@
         margin-bottom: 10px;
         font-weight: 500;
       }
-      .search-box:focus { outline: none; border-color: var(--primary); }
+      .search-box:focus {
+        outline: none;
+        border-color: var(--primary);
+      }
 
-      .filters-row { display: flex; gap: 6px; margin-bottom: 12px; overflow-x: auto; padding-bottom: 4px; }
+      .filters-row {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 12px;
+        overflow-x: auto;
+        padding-bottom: 4px;
+      }
       .filter-btn {
         padding: 6px 10px;
         border-radius: 20px;
@@ -177,7 +230,11 @@
         cursor: pointer;
         white-space: nowrap;
       }
-      .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+      .filter-btn.active {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+      }
 
       .voter-item {
         background: white;
@@ -190,12 +247,31 @@
         align-items: center;
         transition: background 0.2s;
       }
-      .voter-item.voted { background: #f0fdf4; border-color: #86efac; }
-      .voter-info { flex: 1; margin-right: 10px; }
-      .voter-name { font-weight: 700; font-size: 0.95rem; color: #1e293b; margin-bottom: 3px; }
-      .voter-meta { font-size: 0.8rem; color: #64748b; }
+      .voter-item.voted {
+        background: #f0fdf4;
+        border-color: #86efac;
+      }
+      .voter-info {
+        flex: 1;
+        margin-right: 10px;
+      }
+      .voter-name {
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: #1e293b;
+        margin-bottom: 3px;
+      }
+      .voter-meta {
+        font-size: 0.8rem;
+        color: #64748b;
+      }
 
-      .voter-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+      .voter-actions {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 6px;
+      }
       .btn-voto {
         padding: 6px 14px;
         border-radius: 6px;
@@ -205,8 +281,15 @@
         font-size: 0.8rem;
         cursor: pointer;
       }
-      .btn-voto.voto-si { background: #16a34a; color: white; border-color: #16a34a; }
-      .btn-voto.readonly { cursor: default; opacity: 0.9; }
+      .btn-voto.voto-si {
+        background: #16a34a;
+        color: white;
+        border-color: #16a34a;
+      }
+      .btn-voto.readonly {
+        cursor: default;
+        opacity: 0.9;
+      }
 
       .estimacion-select {
         font-size: 0.75rem;
@@ -225,14 +308,48 @@
         color: #334155;
       }
 
-      .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
-      .kpi-card { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 10px 4px; text-align: center; }
-      .kpi-card .num { font-size: 1.3rem; font-weight: 700; color: var(--primary); }
-      .kpi-card .lbl { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+      .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin-bottom: 14px;
+      }
+      .kpi-card {
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 10px 4px;
+        text-align: center;
+      }
+      .kpi-card .num {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--primary);
+      }
+      .kpi-card .lbl {
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+      }
 
-      .form-group { margin-bottom: 14px; }
-      .form-group label { display: block; font-weight: 700; font-size: 0.85rem; color: #334155; margin-bottom: 5px; }
-      .form-control { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 1rem; }
+      .form-group {
+        margin-bottom: 14px;
+      }
+      .form-group label {
+        display: block;
+        font-weight: 700;
+        font-size: 0.85rem;
+        color: #334155;
+        margin-bottom: 5px;
+      }
+      .form-control {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        font-size: 1rem;
+      }
       .btn-submit {
         width: 100%;
         padding: 14px;
@@ -244,16 +361,88 @@
         border-radius: 8px;
         cursor: pointer;
       }
-      .btn-submit:hover { background: var(--primary-dark); }
+      .btn-submit:hover {
+        background: var(--primary-dark);
+      }
 
-      .table-results { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
-      .table-results th, .table-results td { padding: 8px 10px; font-size: 0.85rem; text-align: center; }
-      .table-results th { background: #174276; color: white; text-align: left; }
-      .table-results td:first-child { text-align: left; }
-      .table-results td {{ border-bottom: 1px solid #edf2f7; }}
-      .table-results tr:last-child td { border-bottom: none; font-weight: 700; background: #f1f5f9; }
+      /* Tables */
+      .table-results {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+      }
+      .table-results th,
+      .table-results td {
+        padding: 8px 6px;
+        font-size: 0.82rem;
+        text-align: center;
+      }
+      .table-results th {
+        background: #174276;
+        color: white;
+        text-align: center;
+        font-size: 0.78rem;
+      }
+      .table-results th:first-child,
+      .table-results td:first-child {
+        text-align: left;
+        padding-left: 8px;
+      }
+      .table-results td {
+        border-bottom: 1px solid #edf2f7;
+      }
+      .table-results tr:last-child td {
+        border-bottom: none;
+        font-weight: 700;
+        background: #f1f5f9;
+      }
 
-      .progress-bar-bg { background: #e2e8f0; height: 12px; border-radius: 10px; margin-top: 4px; overflow: hidden; }
+      .progress-bar-bg {
+        background: #e2e8f0;
+        height: 10px;
+        border-radius: 10px;
+        margin-top: 4px;
+        overflow: hidden;
+      }
+
+      /* Charts Container Grid */
+      .charts-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 16px;
+        margin-bottom: 16px;
+      }
+      @media (max-width: 550px) {
+        .charts-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      .chart-box {
+        background: #fafbfc;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 12px;
+        text-align: center;
+      }
+      .chart-title {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 8px;
+        text-transform: uppercase;
+      }
+      .chart-wrapper {
+        position: relative;
+        height: 170px;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+      }
     </style>
   </head>
   <body>
@@ -290,7 +479,7 @@
       </div>
     </nav>
 
-    <!-- 3. TAB BAR (DINÁMICA POR ROL) -->
+    <!-- 3. TAB BAR -->
     <div class="tab-bar">
       <button
         class="tab-btn active"
@@ -452,20 +641,48 @@
         </div>
       </div>
 
-      <!-- TAB 3: CÓMPUTOS Y % DE TODAS LAS LISTAS -->
+      <!-- TAB 3: CÓMPUTOS, GRÁFICOS Y TABLA COMPLETA -->
       <div id="view-computos" style="display: none">
         <div class="card">
           <h3 style="color: var(--primary); margin-bottom: 12px">
-            📊 Consolidado Departamental Calamuchita
+            📊 Centro de Cómputos Departamental
           </h3>
 
-          <!-- Celeste Violeta -->
-          <div style="margin-bottom: 14px">
+          <!-- Gráficos de Torta / Donut -->
+          <div class="charts-grid">
+            <div class="chart-box">
+              <div class="chart-title">🗳️ Participación Total</div>
+              <div class="chart-wrapper">
+                <canvas id="chartParticipacion"></canvas>
+              </div>
+            </div>
+            <div class="chart-box">
+              <div class="chart-title">🟣 Distribución Votos</div>
+              <div class="chart-wrapper">
+                <canvas id="chartListas"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Barras Porcentuales -->
+          <h4
+            style="
+              margin-top: 10px;
+              margin-bottom: 8px;
+              color: #334155;
+              font-size: 0.9rem;
+            "
+          >
+            Detalle de Estimación General:
+          </h4>
+
+          <div style="margin-bottom: 10px">
             <div
               style="
                 display: flex;
                 justify-content: space-between;
                 font-weight: 700;
+                font-size: 0.85rem;
               "
             >
               <span>🟣 Celeste Violeta</span><span id="res-cv-txt">0 (0%)</span>
@@ -478,13 +695,13 @@
             </div>
           </div>
 
-          <!-- Multicolor -->
-          <div style="margin-bottom: 14px">
+          <div style="margin-bottom: 10px">
             <div
               style="
                 display: flex;
                 justify-content: space-between;
                 font-weight: 700;
+                font-size: 0.85rem;
               "
             >
               <span>🔴 Multicolor</span><span id="res-mc-txt">0 (0%)</span>
@@ -497,13 +714,13 @@
             </div>
           </div>
 
-          <!-- Azul y Blanca -->
-          <div style="margin-bottom: 14px">
+          <div style="margin-bottom: 10px">
             <div
               style="
                 display: flex;
                 justify-content: space-between;
                 font-weight: 700;
+                font-size: 0.85rem;
               "
             >
               <span>🔵 Azul y Blanca</span><span id="res-ab-txt">0 (0%)</span>
@@ -516,27 +733,36 @@
             </div>
           </div>
 
-          <!-- Blanco / Sin estimar -->
           <div style="margin-bottom: 14px">
             <div
               style="
                 display: flex;
                 justify-content: space-between;
                 font-weight: 700;
+                font-size: 0.85rem;
               "
             >
-              <span>⚪ Blanco / Otros</span><span id="res-bl-txt">0 (0%)</span>
+              <span>⚪ Blancos / Sin estimar</span
+              ><span id="res-bl-txt">0 (0%)</span>
             </div>
             <div class="progress-bar-bg">
               <div
                 id="res-bl-bar"
-                style="background: #94a3b8; height: 100%; width: 0%"
+                style="background: var(--bl-gray); height: 100%; width: 0%"
               ></div>
             </div>
           </div>
 
-          <h4 style="margin-top: 20px; margin-bottom: 6px; color: #334155">
-            Participación y Porcentaje por Mesa
+          <!-- Tabla Completa Mesa por Mesa con No Votos y Blancos/Otros -->
+          <h4
+            style="
+              margin-top: 20px;
+              margin-bottom: 6px;
+              color: #334155;
+              font-size: 0.9rem;
+            "
+          >
+            Participación y Porcentajes por Mesa
           </h4>
           <div style="overflow-x: auto">
             <table class="table-results">
@@ -545,18 +771,21 @@
                   <th>Mesa</th>
                   <th>Elect.</th>
                   <th>Votaron</th>
+                  <th>No Votó</th>
                   <th>% Part.</th>
                   <th>Est. CV</th>
                   <th>Est. MC</th>
                   <th>Est. AB</th>
+                  <th>Bl./Otro</th>
                 </tr>
               </thead>
               <tbody id="resumen-mesas-body"></tbody>
             </table>
           </div>
+
           <button
             class="btn-submit"
-            style="margin-top: 20px; background: #64748b"
+            style="margin-top: 18px; background: #64748b"
             onclick="cargarPadronDesdeGoogleSheet()"
           >
             🔄 Recargar Todo desde Google Sheet
@@ -572,6 +801,10 @@
       let currentUser = null;
       let padronData = [];
       let activeMesaFilter = "ALL";
+
+      // Instancias de Chart.js
+      let chartParticipacionInstance = null;
+      let chartListasInstance = null;
 
       // 1. INICIALIZACIÓN Y LOGIN
       function initApp() {
@@ -640,7 +873,6 @@
         const tabComputos = document.getElementById("tab-computos");
         const mesaFilters = document.getElementById("mesa-filters-row");
 
-        // FISCAL DE MESA: Sólo su mesa, Padron y Cortes, NO Cómputos
         if (rol === "FISCAL DE MESA") {
           tabComputos.style.display = "none";
           tabCortes.style.display = "block";
@@ -648,21 +880,15 @@
           activeMesaFilter = currentUser.mesa;
           document.getElementById("corte-mesa").value = currentUser.mesa;
           document.getElementById("corte-mesa").disabled = true;
-        }
-        // FISCAL GENERAL: Todas las mesas, Sólo Padrón, NO Cómputos, NO edita
-        else if (rol === "FISCAL GENERAL") {
+        } else if (rol === "FISCAL GENERAL") {
           tabComputos.style.display = "none";
           tabCortes.style.display = "none";
           mesaFilters.style.display = "flex";
-        }
-        // COMPUTO: Padron, Cortes y Cómputos, NO edita votos individuales
-        else if (rol === "COMPUTO") {
+        } else if (rol === "COMPUTO") {
           tabComputos.style.display = "block";
           tabCortes.style.display = "block";
           mesaFilters.style.display = "flex";
-        }
-        // ADMIN: Acceso total
-        else {
+        } else {
           tabComputos.style.display = "block";
           tabCortes.style.display = "block";
           mesaFilters.style.display = "flex";
@@ -757,7 +983,6 @@
             </select>
           `;
           } else {
-            // Modo sólo lectura
             const badgeText = v.estimacion
               ? v.estimacion === "CV"
                 ? "🟣 CV"
@@ -838,7 +1063,7 @@
         renderPadronList();
       }
 
-      // 4. ACTUALIZACIÓN DE KPIS Y PORCENTAJES DE TODAS LAS LISTAS
+      // 4. KPIS, GRÁFICOS Y TABLA CON BLANCOS/OTROS Y NO VOTOS
       function updateKPIs() {
         const scopeData =
           activeMesaFilter === "ALL"
@@ -848,6 +1073,8 @@
               );
         const total = scopeData.length;
         const votaron = scopeData.filter((v) => v.voto === "SI").length;
+        const noVotaron = total - votaron;
+
         const cv = scopeData.filter(
           (v) => v.voto === "SI" && v.estimacion === "CV",
         ).length;
@@ -863,7 +1090,7 @@
         document.getElementById("kpi-padron-votaron").innerText = votaron;
         document.getElementById("kpi-padron-cv").innerText = cv;
 
-        // Cálculos porcentuales sobre el total de votantes
+        // Cálculos porcentuales sobre los que votaron
         const pctCV = votaron > 0 ? ((cv / votaron) * 100).toFixed(1) : 0;
         const pctMC = votaron > 0 ? ((mc / votaron) * 100).toFixed(1) : 0;
         const pctAB = votaron > 0 ? ((ab / votaron) * 100).toFixed(1) : 0;
@@ -879,7 +1106,10 @@
         document.getElementById("res-ab-bar").style.width = pctAB + "%";
         document.getElementById("res-bl-bar").style.width = pctBL + "%";
 
-        // Tabla detallada de mesas
+        // Renderizar o actualizar Gráficos de Torta (Chart.js)
+        renderCharts(votaron, noVotaron, cv, mc, ab, bl);
+
+        // Tabla detallada de mesas (con NO VOTOS y BLANCOS/OTROS)
         const tbody = document.getElementById("resumen-mesas-body");
         if (tbody) {
           tbody.innerHTML = "";
@@ -892,13 +1122,17 @@
 
           let totElec = 0,
             totVot = 0,
+            totNoVot = 0,
             totCv = 0,
             totMc = 0,
-            totAb = 0;
+            totAb = 0,
+            totBl = 0;
+
           mesasCfg.forEach((m) => {
             const mVot = padronData.filter(
               (v) => String(v.mesa) === String(m.num) && v.voto === "SI",
             ).length;
+            const mNoVot = m.elect - mVot;
             const mCv = padronData.filter(
               (v) =>
                 String(v.mesa) === String(m.num) &&
@@ -917,26 +1151,32 @@
                 v.voto === "SI" &&
                 v.estimacion === "AB",
             ).length;
+            const mBl = mVot - (mCv + mMc + mAb);
             const mPct = m.elect > 0 ? ((mVot / m.elect) * 100).toFixed(1) : 0;
 
             totElec += m.elect;
             totVot += mVot;
+            totNoVot += mNoVot;
             totCv += mCv;
             totMc += mMc;
             totAb += mAb;
+            totBl += mBl;
 
             tbody.innerHTML += `
             <tr>
               <td><b>${m.name}</b></td>
               <td>${m.elect}</td>
               <td style="color:#16a34a; font-weight:700;">${mVot}</td>
-              <td>${mPct}%</td>
+              <td style="color:#64748b;">${mNoVot}</td>
+              <td><b>${mPct}%</b></td>
               <td style="color:var(--cv-purple); font-weight:700;">${mCv}</td>
               <td style="color:var(--mc-red); font-weight:700;">${mMc}</td>
               <td style="color:var(--ab-blue); font-weight:700;">${mAb}</td>
+              <td style="color:#64748b; font-weight:600;">${mBl}</td>
             </tr>
           `;
           });
+
           const totalPct =
             totElec > 0 ? ((totVot / totElec) * 100).toFixed(1) : 0;
           tbody.innerHTML += `
@@ -944,12 +1184,90 @@
             <td><b>TOTAL</b></td>
             <td><b>${totElec}</b></td>
             <td style="color:#16a34a;"><b>${totVot}</b></td>
+            <td style="color:#64748b;"><b>${totNoVot}</b></td>
             <td><b>${totalPct}%</b></td>
             <td style="color:var(--cv-purple);"><b>${totCv}</b></td>
             <td style="color:var(--mc-red);"><b>${totMc}</b></td>
             <td style="color:var(--ab-blue);"><b>${totAb}</b></td>
+            <td style="color:#64748b;"><b>${totBl}</b></td>
           </tr>
         `;
+        }
+      }
+
+      // Renderizado dinámico de Gráficos de Torta
+      function renderCharts(votaron, noVotaron, cv, mc, ab, bl) {
+        const ctxPart = document.getElementById("chartParticipacion");
+        const ctxList = document.getElementById("chartListas");
+        if (!ctxPart || !ctxList) return;
+
+        // 1. Gráfico de Participación
+        if (chartParticipacionInstance) {
+          chartParticipacionInstance.data.datasets[0].data = [
+            votaron,
+            noVotaron,
+          ];
+          chartParticipacionInstance.update();
+        } else {
+          chartParticipacionInstance = new Chart(ctxPart, {
+            type: "doughnut",
+            data: {
+              labels: ["Votaron", "No Votaron"],
+              datasets: [
+                {
+                  data: [votaron, noVotaron],
+                  backgroundColor: ["#16a34a", "#cbd5e1"],
+                  borderWidth: 2,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: "bottom",
+                  labels: { boxWidth: 12, font: { size: 10 } },
+                },
+              },
+            },
+          });
+        }
+
+        // 2. Gráfico de Listas
+        const listData = votaron > 0 ? [cv, mc, ab, bl] : [1, 0, 0, 0];
+        if (chartListasInstance) {
+          chartListasInstance.data.datasets[0].data = [cv, mc, ab, bl];
+          chartListasInstance.update();
+        } else {
+          chartListasInstance = new Chart(ctxList, {
+            type: "pie",
+            data: {
+              labels: [
+                "Celeste Violeta",
+                "Multicolor",
+                "Azul y Blanca",
+                "Blanco / Otro",
+              ],
+              datasets: [
+                {
+                  data: [cv, mc, ab, bl],
+                  backgroundColor: ["#5c3b93", "#dc3545", "#0d6efd", "#94a3b8"],
+                  borderWidth: 2,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: "bottom",
+                  labels: { boxWidth: 12, font: { size: 10 } },
+                },
+              },
+            },
+          });
         }
       }
 
@@ -969,6 +1287,11 @@
         document
           .getElementById("tab-computos")
           .classList.toggle("active", tab === "computos");
+
+        // Si entra a computos, re-renderizar los gráficos para que tomen el ancho exacto
+        if (tab === "computos") {
+          setTimeout(updateKPIs, 50);
+        }
       }
 
       function enviarCorteHorario() {
