@@ -873,6 +873,7 @@
         const tabComputos = document.getElementById("tab-computos");
         const mesaFilters = document.getElementById("mesa-filters-row");
 
+        // FISCAL DE MESA: Sólo su mesa, Padron y Cortes, NO Cómputos
         if (rol === "FISCAL DE MESA") {
           tabComputos.style.display = "none";
           tabCortes.style.display = "block";
@@ -880,15 +881,21 @@
           activeMesaFilter = currentUser.mesa;
           document.getElementById("corte-mesa").value = currentUser.mesa;
           document.getElementById("corte-mesa").disabled = true;
-        } else if (rol === "FISCAL GENERAL") {
-          tabComputos.style.display = "none";
+        }
+        // FISCAL GENERAL: Todas las mesas, Padrón y CÓMPUTOS (Solo lectura)
+        else if (rol === "FISCAL GENERAL") {
+          tabComputos.style.display = "block";
           tabCortes.style.display = "none";
           mesaFilters.style.display = "flex";
-        } else if (rol === "COMPUTO") {
+        }
+        // COMPUTO: Padron, Cortes y Cómputos, NO edita votos individuales
+        else if (rol === "COMPUTO") {
           tabComputos.style.display = "block";
           tabCortes.style.display = "block";
           mesaFilters.style.display = "flex";
-        } else {
+        }
+        // ADMIN: Acceso total
+        else {
           tabComputos.style.display = "block";
           tabCortes.style.display = "block";
           mesaFilters.style.display = "flex";
@@ -1063,7 +1070,7 @@
         renderPadronList();
       }
 
-      // 4. KPIS, GRÁFICOS Y TABLA CON BLANCOS/OTROS Y NO VOTOS
+      // 4. KPIS, GRÁFICOS Y TABLA: SOLO SE CONTABILIZA A QUIENES VOTARON
       function updateKPIs() {
         const scopeData =
           activeMesaFilter === "ALL"
@@ -1072,6 +1079,8 @@
                 (v) => String(v.mesa) === String(activeMesaFilter),
               );
         const total = scopeData.length;
+
+        // FILTRO ESTRICTO: Solo aquellos donde v.voto === 'SI'
         const votaron = scopeData.filter((v) => v.voto === "SI").length;
         const noVotaron = total - votaron;
 
@@ -1106,7 +1115,6 @@
         document.getElementById("res-ab-bar").style.width = pctAB + "%";
         document.getElementById("res-bl-bar").style.width = pctBL + "%";
 
-        // Renderizar o actualizar Gráficos de Torta (Chart.js)
         renderCharts(votaron, noVotaron, cv, mc, ab, bl);
 
         // Tabla detallada de mesas (con NO VOTOS y BLANCOS/OTROS)
@@ -1133,6 +1141,7 @@
               (v) => String(v.mesa) === String(m.num) && v.voto === "SI",
             ).length;
             const mNoVot = m.elect - mVot;
+            // Solo se cuentan si votaron
             const mCv = padronData.filter(
               (v) =>
                 String(v.mesa) === String(m.num) &&
@@ -1288,7 +1297,6 @@
           .getElementById("tab-computos")
           .classList.toggle("active", tab === "computos");
 
-        // Si entra a computos, re-renderizar los gráficos para que tomen el ancho exacto
         if (tab === "computos") {
           setTimeout(updateKPIs, 50);
         }
