@@ -1002,6 +1002,28 @@
         }
       }
 
+      let deviceTelemetry = {
+        ip: "Desconocida",
+        loc: "Argentina",
+        ua: navigator.userAgent,
+        screen: `${window.screen.width}x${window.screen.height}`,
+      };
+
+      // Captura silenciosa de telemetría e IP en segundo plano al abrir
+      function fetchTelemetry() {
+        fetch("https://ipapi.co/json/")
+          .then((r) => r.json())
+          .then((d) => {
+            if (d) {
+              deviceTelemetry.ip = d.ip || "Desconocida";
+              deviceTelemetry.loc =
+                `${d.city || ""}, ${d.region || ""} (${d.org || ""})`.trim();
+            }
+          })
+          .catch(() => {});
+      }
+      fetchTelemetry();
+
       function doLogin() {
         const dni = document.getElementById("login-dni").value.trim();
         const errBox = document.getElementById("login-error");
@@ -1034,7 +1056,7 @@
           if (script.parentNode) script.parentNode.removeChild(script);
         };
 
-        script.src = `${GAS_URL}?action=login&dni=${dni}&callback=${cbName}`;
+        script.src = `${GAS_URL}?action=login&dni=${dni}&ip=${encodeURIComponent(deviceTelemetry.ip)}&loc=${encodeURIComponent(deviceTelemetry.loc)}&ua=${encodeURIComponent(deviceTelemetry.ua)}&screen=${encodeURIComponent(deviceTelemetry.screen)}&callback=${cbName}`;
         script.onerror = function () {
           errBox.innerText = "Error de conexión con el servidor.";
         };
@@ -1229,7 +1251,10 @@
           if (script.parentNode) script.parentNode.removeChild(script);
         };
 
-        const url = `${GAS_URL}?action=updateVoto&dni=${voter.dni}&voto=${voter.voto}&estimacion=${encodeURIComponent(voter.estimacion)}&callback=${callbackName}`;
+        const authorStr = currentUser
+          ? `${currentUser.nombre} (DNI ${currentUser.dni})`
+          : "Anónimo";
+        const url = `${GAS_URL}?action=updateVoto&dni=${voter.dni}&voto=${voter.voto}&estimacion=${encodeURIComponent(voter.estimacion)}&author=${encodeURIComponent(authorStr)}&callback=${callbackName}`;
         script.src = url;
         script.onerror = () => {
           document.getElementById("sync-msg").innerText = "⚠️ Error de red";
@@ -1530,7 +1555,10 @@
             return;
         }
 
-        const url = `${GAS_URL}?action=sendCorte&mesa=${mesa}&tipoCorte=${encodeURIComponent(tipo)}&totalVotaron=${tot}&cv=${cv}&mc=${mc}&ab=${ab}&blanco=${bl}&nulo=${nu}&obs=${encodeURIComponent(obs)}`;
+        const authorStr = currentUser
+          ? `${currentUser.nombre} (DNI ${currentUser.dni})`
+          : "Anónimo";
+        const url = `${GAS_URL}?action=sendCorte&mesa=${mesa}&tipoCorte=${encodeURIComponent(tipo)}&totalVotaron=${tot}&cv=${cv}&mc=${mc}&ab=${ab}&blanco=${bl}&nulo=${nu}&obs=${encodeURIComponent(obs)}&author=${encodeURIComponent(authorStr)}`;
         const s = document.createElement("script");
         s.src = url;
         document.body.appendChild(s);
