@@ -496,6 +496,40 @@
         color: #ffffff;
         font-weight: 600;
       }
+
+      /* Pagination Controls */
+      .pagination-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 14px;
+        margin-bottom: 20px;
+        background: white;
+        padding: 10px 14px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+      }
+      .btn-page {
+        padding: 8px 16px;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 0.82rem;
+        cursor: pointer;
+      }
+      .btn-page:disabled {
+        background: #cbd5e1;
+        cursor: not-allowed;
+        opacity: 0.7;
+      }
+      .page-info {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--primary);
+      }
     </style>
   </head>
   <body>
@@ -633,6 +667,21 @@
           <div style="text-align: center; padding: 30px; color: #64748b">
             ⏳ Cargando padrón...
           </div>
+        </div>
+
+        <!-- Controles de Paginación (10 electores por página) -->
+        <div
+          class="pagination-bar"
+          id="pagination-controls"
+          style="display: none"
+        >
+          <button class="btn-page" id="btn-prev" onclick="changePage(-1)">
+            ⬅ Anterior
+          </button>
+          <span class="page-info" id="page-indicator">Página 1 de 1</span>
+          <button class="btn-page" id="btn-next" onclick="changePage(1)">
+            Siguiente ➡
+          </button>
         </div>
       </div>
 
@@ -1147,8 +1196,12 @@
         document.body.appendChild(script);
       }
 
+      let currentPage = 1;
+      const PAGE_SIZE = 10;
+
       function renderPadronList() {
         const container = document.getElementById("voter-list-container");
+        const paginationBox = document.getElementById("pagination-controls");
         container.innerHTML = "";
         const query = document
           .getElementById("padron-search")
@@ -1170,10 +1223,23 @@
 
         if (filtered.length === 0) {
           container.innerHTML = `<div style="text-align:center; padding: 20px; color:#94a3b8;">No se encontraron afiliados.</div>`;
+          if (paginationBox) paginationBox.style.display = "none";
           return;
         }
 
-        filtered.forEach((v) => {
+        // Cálculo de páginas
+        const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+        if (currentPage > totalPages) currentPage = totalPages;
+        if (currentPage < 1) currentPage = 1;
+
+        const startIndex = (currentPage - 1) * PAGE_SIZE;
+        const paginatedItems = filtered.slice(
+          startIndex,
+          startIndex + PAGE_SIZE,
+        );
+
+        // Renderiza estrictamente los 10 elementos de la página activa
+        paginatedItems.forEach((v) => {
           const div = document.createElement("div");
           div.className = `voter-item ${v.voto === "SI" ? "voted" : ""}`;
 
@@ -1216,6 +1282,22 @@
         `;
           container.appendChild(div);
         });
+
+        // Actualizar Controles de Paginación
+        if (paginationBox) {
+          paginationBox.style.display = "flex";
+          document.getElementById("page-indicator").innerText =
+            `Pág. ${currentPage} de ${totalPages} (${filtered.length} electores)`;
+          document.getElementById("btn-prev").disabled = currentPage <= 1;
+          document.getElementById("btn-next").disabled =
+            currentPage >= totalPages;
+        }
+      }
+
+      function changePage(delta) {
+        currentPage += delta;
+        renderPadronList();
+        window.scrollTo({ top: 120, behavior: "smooth" });
       }
 
       function toggleVoto(orden) {
@@ -1263,11 +1345,13 @@
       }
 
       function filterPadron() {
+        currentPage = 1;
         renderPadronList();
       }
 
       // Sincroniza la selección de filtros entre ambas pestañas (Padrón y Cómputos)
       function setMesaFilter(mesa, btn) {
+        currentPage = 1;
         activeMesaFilter = mesa;
 
         // Sincronizar clases activas en todos los grupos de filtros
